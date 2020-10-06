@@ -4,6 +4,8 @@ Utils to plot star maps visible by Metis, calculate PSF, find stars from Metis i
 ## Installation
 Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) if you don't have Python installed. Open a Miniconda console.
 
+Donwload the code (green *Code* button) or `git clone...`
+
 After downloading the files, create a virtual environment, eg:
 `conda create --name metis_star_utils`
 
