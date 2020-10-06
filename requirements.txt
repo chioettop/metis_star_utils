@@ -1,0 +1,6 @@
+astropy>=4
+astroquery>=0.4
+matplotlib>=3.2
+numpy>=1.19
+photutils>1
+scipy>=1.5

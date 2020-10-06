@@ -4,6 +4,7 @@ Created on Mon Jul  6 16:59:07 2020
 
 @author: P. Chioetto 
 """
+import matplotlib.pyplot as plt
 import argparse
 from os import path
 from spicelib import MetisSpice
@@ -52,9 +53,10 @@ sl.plot_fov_circle(wcs.wcs.crpix, sl.METIS_fov_min/scale, 'r', ax)
 fig = ax.figure
 fig.suptitle("UTC Time " + spice.et2utc(et))
 ax.set_title(f"RA {ra}, dec {dec}")
+plt.show()
 
 # add sensor coordinates to star list and print
 x, y = wcs.wcs_world2pix(stars['ra'], stars['dec'], 0)
 stars['sensor_x'] = x
 stars['sensor y'] = y
-print(stars)
+stars.pprint_all()
