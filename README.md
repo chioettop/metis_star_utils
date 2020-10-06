@@ -6,13 +6,13 @@ Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) if you don't
 
 Donwload the code (green *Code* button) or `git clone...`
 
-After downloading the files, create a virtual environment, eg:
-`conda create --name metis_star_utils`
+After downloading the files, create a virtual environment with pip installed, eg:  
+`conda create --name metis_star_utils pip`
 
-Activate the environment:
+Activate the environment:  
 `conda activate metis_star_utils`
 
-Download dependencies:
+Download dependencies:  
 `pip install -r requirements.txt`
 
 Download Solar Orbiter SPICE Kernel dataset here: [Solar-Orbiter SPICE Kernel](https://repos.cosmos.esa.int/socci/rest/api/latest/projects/SPICE_KERNELS/repos/solar-orbiter/archive?format=zip)
