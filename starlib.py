@@ -15,7 +15,6 @@ from astroquery.simbad import Simbad
 from photutils.centroids import fit_2dgaussian
 from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
-from spicelib import MetisSpice
 
 
 # common parameters
