@@ -19,6 +19,10 @@ More information on SO SPICE Kernel [here](https://www.cosmos.esa.int/web/spice/
 
 ## starfield.py
 Plots a star field at specific UTC time. Example:  
-`python starfield.py "2020 MAY 15 07:03:33.7649" -k ../kernels/solar-orbiter/kernels/mk/solo_ANC_soc-flown-mk.tm`
+`python starfield.py "2020 MAY 15 07:03:33.7649" -k ../kernels/solar-orbiter/kernels/mk/solo_ANC_soc-flown-mk.tm`  
+Make sure the SPICE kernels used contain the specific date and are up-to-date. For dates in the future, always use predictions: `solo_ANC_soc-pred-mk.mk`
 
 Type `python starfield.py -h` for help.
+
+*Notes:
+1. UV does not use latest calibration data yet*
