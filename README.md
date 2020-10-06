@@ -18,6 +18,7 @@ Download Solar Orbiter SPICE Kernel dataset here: [Solar-Orbiter SPICE Kernel](h
 More information on SO SPICE Kernel [here](https://www.cosmos.esa.int/web/spice/solar-orbiter)
 
 ## starfield.py
-Plots a star field at specific UTC time. Example:
-`python starfield.py `
+Plots a star field at specific UTC time. Example:  
+`python starfield.py "2020 MAY 15 07:03:33.7649" -k ../kernels/solar-orbiter/kernels/mk/solo_ANC_soc-flown-mk.tm`
 
+Type `python starfield.py -h` for help.
