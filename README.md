@@ -2,9 +2,22 @@
 Utils to plot star maps visible by Metis, calculate PSF, find stars from Metis images.
 
 ## Installation
+Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) if you don't have Python installed. Open a Miniconda console.
+
+After downloading the files, create a virtual environment, eg:
+`conda create --name metis_star_utils`
+
+Activate the environment:
+`conda activate metis_star_utils`
+
+Download dependencies:
+`pip install -r requirements.txt`
+
 Download Solar Orbiter SPICE Kernel dataset here: [Solar-Orbiter SPICE Kernel](https://repos.cosmos.esa.int/socci/rest/api/latest/projects/SPICE_KERNELS/repos/solar-orbiter/archive?format=zip)
 
-More information [here](https://www.cosmos.esa.int/web/spice/solar-orbiter)
+More information on SO SPICE Kernel [here](https://www.cosmos.esa.int/web/spice/solar-orbiter)
 
-## Files
+## starfield.py
+Plots a star field at specific UTC time. Example:
+`python starfield.py `
 
