@@ -67,7 +67,7 @@ def simbad_search(ra, dec, max_mag=6):
     return res
 
 
-def simbad_plot(st, wcs, ax=None, color='green', scatter=False):
+def simbad_plot(st, wcs, ax=None, color='green', scatter=False, ref_frame='sky'):
                
     if ax is None:
         fig, ax = plt.subplots()
@@ -96,8 +96,8 @@ def simbad_plot(st, wcs, ax=None, color='green', scatter=False):
         [ax.add_patch(plt.Circle((xi, yi), radius=10, color=color, fill=False)) \
                    for xi, yi in zip(x, y)]
     
-    plt.xlabel('X sensor pixels')
-    plt.ylabel('Y sensor pixels')
+    plt.xlabel('detector x')
+    plt.ylabel('detector y')
     
     l_off = 5 # pixels
     
@@ -111,32 +111,40 @@ def simbad_plot(st, wcs, ax=None, color='green', scatter=False):
 
 def wcs_from_boresight(ra, dec, roll, UV=False):
     '''
-    Returns WCS coordinates object from RA, Dec and Roll of Metis
+    Returns WCS coordinates transformation object from RA, Dec and Roll of Metis.
+    The WCS converts from celestial and sensor coordinates (and vice versa).
+    VL sensor coordinates have inverted x axis and are rotated 90 deg clockwise
+    wrt. celestial.
+    https://fits.gsfc.nasa.gov/fits_wcs.html
 
     '''
     
     if UV:
-        scx = 20/3600      # scale is 20"/px approx
+        scx = 20/3600      # platescale in deg
         scy = 20/3600       
         bx, by = 512, 512  # boresight position in px
 
     else:    
-        scx = 10.137/3600          # scale in deg
+        scx = -10.137/3600  # platescale in deg (negative to invert axis)
         scy = 10.137/3600       
-        bx, by = 1049.130, 966.075 # boresight position in px
+        bx = 966.075  # boresight position in px
+        by = 2048-1049.130 
+        det_angle = -90     # deg, detector base rotation wrt. sky 
     
     roll_offset = 0.077
     
+    # build a WCS between sensor and sky coords
+    # trasformation order pix->sky: matrix (rotation) -> translation -> scale
     w = astropy.wcs.WCS(naxis=2)
     w.pixel_shape = (1024, 1024) if UV else (2048, 2048)
-    w.wcs.crpix = [bx, by]     # translation (center in pixels)         
-    w.wcs.cdelt = [-scx, scy]  # scaling, minus sign to inver x axis
-    w.wcs.crval = [ra, dec]    # center in celestial coords
-    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]  # projection type from plane to spherical
+    w.wcs.crpix = [bx, by]     # for boresight translation (center in pixels)         
+    w.wcs.cdelt = [scx, scy]   # for scaling
+    w.wcs.crval = [ra, dec]    # boresight in celestial coords
+    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]  # projection type from plane to spherical (TAN is gnomonic)
     w.wcs.cunit = ["deg", "deg"]            # unit for crdelt and crval
-    t = -np.deg2rad(roll+roll_offset)  # negative wrt the one returned by the rot matrix. Why?
+    t = -np.deg2rad(roll+roll_offset+det_angle)  # negative wrt the one returned by the rot matrix. Why?
     c, s = np.cos(t), np.sin(t)
-    w.wcs.pc = np.array([[c, -s], [s, c]]) # rotation matrix
+    w.wcs.pc = np.array([[c, -s], [s, c]]) # rotation matrix accounting for roll angle
     
     return w      
 
@@ -160,12 +168,12 @@ def plot_image(image_data, ax=None):
     
     return ax
 
-def plot_fits(file, ax=None, coor=None, dark=True, rotate=True):
+def plot_fits(file, ax=None, coor=None, dark=True, ref_frame='sky'):
     # plt.style.use(astropy_mpl_style)
     hdul = fits.open(file)
     image_data = hdul[0].data
     
-    if rotate:
+    if ref_frame=='sky':
         image_data = np.rot90(image_data, 3)
     
     if coor:
@@ -185,23 +193,28 @@ def plot_fits(file, ax=None, coor=None, dark=True, rotate=True):
     
     return ax
       
-def find_stars(image_data, fwhm=3., threshold=None, ax=None, plot=True):
+def find_stars(image_data, fwhm=3., threshold=None, ax=None, plot=True, fov=None):
   
+    image_data = np.copy(image_data)
+    mask = (image_data == 0)
+    
+    if fov:
+        w, h = image_data.shape
+        i, j = np.indices(image_data.shape, sparse=True)
+        r = np.sqrt((i - w/2)**2 + (j - h/2)**2)
+        mask = mask | (r < fov[0]) | (r > fov[1])
+    
+    image_data[mask] = np.nan   # the algorithm gets fooled by zeros
+        
     mean, median, std = sigma_clipped_stats(image_data, sigma=3.0, mask_value=0.0)
-    mask = image_data == 0
     
     if not threshold:
         threshold = 3 * std
     
     daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold)
-    image_data[mask] = np.nan   # the algorithm gets fooled by the mask otherwise
     sources = daofind(image_data - median)  
-    image_data[mask] = 0        # restore image_data
     
-    if plot:
-        #print('Stars detected with DAOStarFinder:')
-        #sources.pprint_all()
-        
+    if plot: 
         if sources and (len(sources) < 20):
             if ax is None:
                 fig, ax = plt.subplots()

@@ -57,6 +57,6 @@ plt.show()
 
 # add sensor coordinates to star list and print
 x, y = wcs.wcs_world2pix(stars['ra'], stars['dec'], 0)
-stars['sensor_x'] = x
-stars['sensor y'] = y
+stars['xsensor'] = x
+stars['ysensor'] = y
 stars.pprint_all()
