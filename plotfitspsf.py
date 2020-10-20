@@ -24,11 +24,16 @@ file = sys.argv[1]
 file = "http://metisarchive.oato.inaf.it/marc//20200515_01_PFM_IT-6B1-IOM-Adjustment/OUTPUT/solo_l0_metis-vl-image_0642850450_v01.fits"
 file = '../PFM_RSICW\\solo_l0_metis-vl-image_0645545693_v01.fits'
 file = "G:\Il mio Drive\METIS\Stellar fields identification\PFM_RSICW\solo_l0_metis-vl-image_0645742792_v01.fits"
-"""
 file = "http://metisarchive.oato.inaf.it/marc//20200515_01_PFM_IT-6B1-IOM-Adjustment/OUTPUT/solo_l0_metis-vl-image_0642850450_v01.fits"
+# file UV che Andretta dice mostrare problemi in OBT
+file = "http://metisarchive.oato.inaf.it/marc//20200618_01_PFM_RSICW/L0/solo_l0_metis-uv-image_0645937059_v01.fits"
+"""
+file = '../PFM_RSICW\\solo_l0_metis-vl-image_0645545693_v01.fits'
+
 # Image from Metis UV instrument?
 UV = "uv" in file
 ref_frame = 'detector'
+dark = True
 
 hdul = fits.open(file)
 
@@ -55,13 +60,12 @@ catalog_stars['ysensor'] = y
 if ref_frame=='sky':
     image_data = np.rot90(hdul[0].data, 3)
 if ref_frame=='detector':
-    image_data = hdul[0].data
-#image_data = remove_dark(image_data, hdul[1].header['DIT']/1000)    
+    image_data = hdul[0].data    
 
 fig, ax = plt.subplots(figsize=(10,8))
 plt.subplots_adjust(bottom=0.2)
 
-sl.plot_fits(file, ax=ax, coor=(ra, dec), ref_frame=ref_frame, dark=False)
+sl.plot_fits(file, ax=ax, coor=(ra, dec), utc=spice.et2utc(et), ref_frame=ref_frame, dark=dark)
 
 """    
 # file with WCS calculated from star positions

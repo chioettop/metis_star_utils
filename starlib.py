@@ -123,6 +123,7 @@ def wcs_from_boresight(ra, dec, roll, UV=False):
         scx = 20/3600      # platescale in deg
         scy = 20/3600       
         bx, by = 512, 512  # boresight position in px
+        det_angle = 0
 
     else:    
         scx = -10.137/3600  # platescale in deg (negative to invert axis)
@@ -148,10 +149,13 @@ def wcs_from_boresight(ra, dec, roll, UV=False):
     
     return w      
 
-def remove_dark(image_data, t_exp):
+def remove_dark(image_data, t_exp, UV=False):
+    if UV:
+        return image_data
+    
     dark = fits.getdata('dark_vlda_it2.fits')
-    bias = fits.getdata('bias_vlda_it6b1.fits')
-    return image_data - np.rot90(bias + dark*t_exp, 3)
+    bias = fits.getdata('bias_it6b1_test.fits')
+    return image_data - bias - dark*t_exp
 
 def plot_image(image_data, ax=None):
     low, high = scoreatpercentile(image_data, (10, 95))
@@ -168,7 +172,7 @@ def plot_image(image_data, ax=None):
     
     return ax
 
-def plot_fits(file, ax=None, coor=None, dark=True, ref_frame='sky'):
+def plot_fits(file, ax=None, coor=None, dark=True, utc=None, ref_frame='sky'):
     # plt.style.use(astropy_mpl_style)
     hdul = fits.open(file)
     image_data = hdul[0].data
@@ -183,10 +187,13 @@ def plot_fits(file, ax=None, coor=None, dark=True, ref_frame='sky'):
         coor_str = ''
         
     if dark:
-        image_data = remove_dark(image_data)
+        image_data = remove_dark(image_data, hdul[1].header['DIT']/1000, "uv" in file)
         
     ax = plot_image(image_data, ax)
-    ax.get_figure().suptitle(hdul[0].header['FILENAME'])
+    title = hdul[0].header['FILENAME']
+    if type(utc) is str:
+        title += "\n" + utc
+    ax.get_figure().suptitle(title)
     ax.set_title(coor_str + f"DIT {hdul[1].header['DIT']};")
     
     hdul.close()
@@ -215,7 +222,7 @@ def find_stars(image_data, fwhm=3., threshold=None, ax=None, plot=True, fov=None
     sources = daofind(image_data - median)  
     
     if plot: 
-        if sources and (len(sources) < 20):
+        if sources and (len(sources) < 25):
             if ax is None:
                 fig, ax = plt.subplots()
                 
