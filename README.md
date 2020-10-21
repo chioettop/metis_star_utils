@@ -8,10 +8,10 @@ Utilities to plot star maps visible by Metis, calculate PSF, find stars from Met
 
 1. Open a conda console and go to the directory where you downloaded the source code.
 
-1. Optional, if you want to avoid conflicts with your other Python projects: after downloading the files, create a virtual environment, eg.:  
+1. **Optional**, if you want to avoid conflicts with your other Python projects: after downloading the files, create a virtual environment, eg.:  
 `conda create --name metis_star_utils pip`
 
-   Activate the environment:  
+   And activate the environment:  
    `conda activate metis_star_utils`
 
 1. Download library dependencies:  
@@ -25,7 +25,7 @@ Utilities to plot star maps visible by Metis, calculate PSF, find stars from Met
 
 ## starfield.py
 Plots a star field at specific UTC time.  
-If you used a virtual environment to install the program, remember to activate it before launching the script (`conda activate metis_star_utils`).
+If you used a virtual environment to install the program, make sure it is active before launching the script (look at the command prompt). In case, activate it again with `conda activate metis_star_utils`.
 
 The script needs to know the location of the SPICE metakernel to load. Make sure that the SPICE kernels used contain the specific date and are up-to-date.  
 
