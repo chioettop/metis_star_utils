@@ -103,7 +103,7 @@ def simbad_plot(st, wcs, ax=None, color='green', scatter=False, ref_frame='sky')
     
     for xp, yp, label, mag in zip(x, y, st['MAIN_ID'], st['mag']):
        if label:
-          plt.annotate(f"{label.decode('UTF-8')}, {mag:.1f}", (xp+l_off, yp+l_off), color=color) # label is a byte string
+          plt.annotate(f"{label}, {mag:.1f}", (xp+l_off, yp+l_off), color=color) 
           
     #plt.gca().invert_xaxis()  # in case this function is used alone
     
