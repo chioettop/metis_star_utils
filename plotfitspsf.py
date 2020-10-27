@@ -28,7 +28,7 @@ file = "http://metisarchive.oato.inaf.it/marc//20200515_01_PFM_IT-6B1-IOM-Adjust
 # file UV che Andretta dice mostrare problemi in OBT
 file = "http://metisarchive.oato.inaf.it/marc//20200618_01_PFM_RSICW/L0/solo_l0_metis-uv-image_0645937059_v01.fits"
 """
-file = '../PFM_RSICW\\solo_l0_metis-vl-image_0645545693_v01.fits'
+file = 'G:\Il mio Drive\METIS\Stellar fields identification\PFM_RSICW\solo_l0_metis-uv-image_0645545692_v01.fits'
 
 # Image from Metis UV instrument?
 UV = "uv" in file

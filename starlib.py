@@ -120,17 +120,19 @@ def wcs_from_boresight(ra, dec, roll, UV=False):
     '''
     
     if UV:
-        scx = 20/3600      # platescale in deg
-        scy = 20/3600       
-        bx, by = 512, 512  # boresight position in px
+        scx = -20.401/3600      # platescale in deg
+        scy = 20.401/3600       
+        bx, by = 512+2.6, 512-4.2  # boresight position in px
         det_angle = 0
+        flip_xy = True          # UV detector appears to be flipped
 
     else:    
         scx = -10.137/3600  # platescale in deg (negative to invert axis)
         scy = 10.137/3600       
-        bx = 966.075  # boresight position in px
+        bx = 966.075        # boresight position in px
         by = 2048-1049.130 
-        det_angle = -90     # deg, detector base rotation wrt. sky 
+        det_angle = -90     # deg, detector base rotation wrt. sky
+        flip_xy = False
     
     roll_offset = 0.077
     
@@ -146,6 +148,8 @@ def wcs_from_boresight(ra, dec, roll, UV=False):
     t = -np.deg2rad(roll+roll_offset+det_angle)  # negative wrt the one returned by the rot matrix. Why?
     c, s = np.cos(t), np.sin(t)
     w.wcs.pc = np.array([[c, -s], [s, c]]) # rotation matrix accounting for roll angle
+    if flip_xy:
+        w.wcs.pc = w.wcs.pc @ np.array([[0,-1],[-1,0]])
     
     return w      
 
@@ -200,7 +204,7 @@ def plot_fits(file, ax=None, coor=None, dark=True, utc=None, ref_frame='sky'):
     
     return ax
       
-def find_stars(image_data, fwhm=3., threshold=None, ax=None, plot=True, fov=None):
+def find_stars(image_data, fwhm=3., threshold=None, ax=None, plot=False, fov=None):
   
     image_data = np.copy(image_data)
     mask = (image_data == 0)
