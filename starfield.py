@@ -35,6 +35,7 @@ spice = MetisSpice(meta_kernel, kernel_path)
 # et timestamp from UTC time
 et = spice.utc2et(args.time)
 
+# Metis boresight from et time
 ra, dec, roll = spice.boresight(et, UV=args.UV)
 
 # build Worls Coordinate System object
