@@ -35,7 +35,7 @@ file = 'http://metisarchive.oato.inaf.it/marc//20200515_01_PFM_IT-6B1_IOM-coarse
 # file UV che Andretta dice mostrare problemi in OBT
 file = "http://metisarchive.oato.inaf.it/marc//20200618_01_PFM_RSICW/L0/solo_l0_metis-vl-image_0645742792_v01.fits"
 """
-file = '../PFM_RSICW\\solo_l0_metis-vl-image_0646076988_v01.fits'
+file = "G:\Il mio Drive\METIS\Stellar fields identification\PFM_RSICW\solo_l0_metis-vl-image_0646069288_v01.fits"
 
 # Image from Metis UV instrument?
 UV = "uv" in file
@@ -77,6 +77,8 @@ sl.plot_fits(file, ax=ax, coor=(ra, dec), utc=spice.et2utc(et), ref_frame=ref_fr
 wcs = sl.wcs_from_boresight(ra, dec, roll, UV)
 
 # adjust boresight with nominal wcs
+# need to check if proper motion should be included in the
+# calculation: https://gea.esac.esa.int/archive/documentation/GDR2/Data_processing/chap_cu3ast/sec_cu3ast_cali/ssec_cu3ast_cali_frame.html
 ra_adj, dec_adj = wcs.wcs_pix2world(np.array([wcs.pixel_shape])/2, 0).flatten()
 
 # find stars through catalog search
@@ -153,6 +155,7 @@ def clbk_fit_wcs(event):
 
     proj_point = SkyCoord(ra, dec, frame="icrs", unit="deg")
 
+    
     fit_wcs, fit_res = sl.wcs_fit(
         xy=xy,
         world_coords=world_coords,
@@ -165,6 +168,10 @@ def clbk_fit_wcs(event):
     x, y = fit_wcs.wcs_world2pix(catalog_stars['ra'], catalog_stars['dec'], 0)
     catalog_stars['xsensor'] = x
     catalog_stars['ysensor'] = y
+    x, y = fit_wcs.wcs_world2pix(matched_stars['ra'], matched_stars['dec'], 0)
+    matched_stars['xsensor'] = x
+    matched_stars['ysensor'] = y
+
     
     fig = plt.figure()
     ax = fig.gca()

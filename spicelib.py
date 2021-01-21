@@ -54,16 +54,22 @@ class MetisSpice():
      
         channel = 'SOLO_METIS_EUV_ILS' if UV else 'SOLO_METIS_VIS_ILS'
         with chdir(self.path):
-            rot = spiceypy.pxform(channel, 'J2000', et) # rotation matrix from Metis local frame to J2000
-            res = np.dot(rot, [-1, 0, 0])               # transform Metis boresight to J2000
-            radec = spiceypy.recrad(res)                # returns [distance, RA, DEC] of vector
-            ra, dec = np.rad2deg(radec[1:3])            # ra, dec in degrees
-            _, _, roll = np.rad2deg(spiceypy.m2eul(rot, 3, 2, 1)) # convert rot matrix to Euler angles. The one corresponding to x axis is Metis roll
+            # rotation matrix from Metis local frame to J2000
+            rot = spiceypy.pxform(channel, 'J2000', et) 
+            # transform Metis boresight to J2000
+            res = np.dot(rot, [-1, 0, 0])
+            # returns [distance, RA, DEC] of vector
+            radec = spiceypy.recrad(res)               
+            # ra, dec in degrees
+            ra, dec = np.rad2deg(radec[1:3])            
+            # convert rot matrix to Euler angles 
+            # the one corresponding to x axis is Metis roll
+            _, _, roll = np.rad2deg(spiceypy.m2eul(rot, 3, 2, 1)) 
         
         return ra, dec, roll
 
     def sun_distance(self, et):
-    # Returns Metis-Sun distance in Km        
+    # Returns Metis-Sun distance in Km from et time
         channel = 'SOLO_METIS_VIS_ILS'  # works also for the UV channel
         # sun state vector in Metis reference frame
         with chdir(self.path):

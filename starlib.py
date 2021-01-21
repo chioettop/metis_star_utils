@@ -145,14 +145,14 @@ def wcs_from_boresight(ra, dec, roll, UV=False):
         flip_xy = True          # UV detector appears to be flipped
 
     else:    
-        scx = -10.137/3600  # platescale in deg (negative to invert axis)
-        scy = 10.137/3600       
-        bx = 966.075        # boresight position in px
-        by = 2048-1049.130 
+        scx = -10.143/3600  # platescale in deg (negative to invert axis)
+        scy = 10.136/3600       
+        bx = 966.947        # boresight position in px
+        by = 999 
         det_angle = -90     # deg, detector base rotation wrt. sky
         flip_xy = False
     
-    roll_offset = 0.077
+    roll_offset = 0.055
     
     # build a WCS between sensor and sky coords
     # trasformation order pix->sky: matrix (rotation) -> translation -> scale
@@ -265,8 +265,6 @@ def wcs_fit(xy, world_coords, proj_point,
         The best-fit WCS to the points given.
     """
 
-    from astropy.coordinates import SkyCoord # here to avoid circular import
-    import astropy.units as u
     from astropy.wcs import Sip
     from astropy.wcs.utils import celestial_frame_to_wcs
     from scipy.optimize import least_squares
@@ -503,16 +501,32 @@ def image_cutout(image_data, x, y, size):
 
 def find_nearby_stars(image_data, xs, ys, size=10, 
                       centroid_func=centroids.centroid_2dg):
-    """
-    Finds a star nearby a given location in pixels, using a centroiding
-    function if provided (eg. the ones in photutils.centroids)
+    '''
+    Finds stars in an image nearby a set of location in pixels, 
+    using a centroiding function if provided 
+    (eg. the ones in photutils.centroids)
 
+    Parameters
+    ----------
+    image_data : array
+    xs, yx : array
+        coordinates of potential stars.
+    size : int, optional
+        size of the box where to look for stars. The default is 10.
+    centroid_func : function, optional
+        centroid function to use. The default is centroids.centroid_2dg.
 
-    """
+    Returns
+    -------
+    stars : Astropy Table
+        table with columns 'x_peak', 'y_peak', 'peak_value', 'x_centroid', 
+        'y_centroid'. 'peak_value' includes the floor (median of the image)
+
+    '''
     
     assert xs.shape == ys.shape
     
-    names = ['x_peak', 'y_peak', 'peak_value', 'x_centroid', 'y_centroid']
+    names = ['x_peak', 'y_peak', 'peak_value', 'peak_floor', 'x_centroid', 'y_centroid']
     stars = Table(names=names)
     
     for x, y in zip(xs, ys):
@@ -522,14 +536,25 @@ def find_nearby_stars(image_data, xs, ys, size=10,
         if sub is None:
             stars.add_row([np.nan]*len(names))
         else:
-    
-            mean, median, std = sigma_clipped_stats(sub, sigma=3.0)
-            f = find_peaks(sub-median, threshold=3*std, box_size=size*2, npeaks=1,
+            
+            # mask 0 pixels because they don't contain data
+            mask = sub == 0
+            mean, median, std = sigma_clipped_stats(sub[~mask], sigma=3.0)
+            
+            f = find_peaks(sub-median, 
+                           threshold=3*std, 
+                           box_size=size*2, 
+                           npeaks=1,
+                           mask=mask,
                            centroid_func=centroid_func)
             if f:
                 # translate to global sensor coordinates
                 f['x_peak'] += int(x) - size 
                 f['y_peak'] += int(y) - size
+                
+                # add back floor to the peak and save it
+                f['peak_value'] += median
+                f['peak_floor'] = median
                 
                 # centroids outside of the sub are clearly a bad fit
                 if (f['x_centroid'] < 0)      | \
@@ -735,4 +760,50 @@ def plot_fitted_psf(stars, image_data, size):
     fig.update_layout(title_text="Side By Side Subplots", showlegend=False)
     fig.show()
     
+def plot_cutouts_from_stars_df(stars_df, cols=10, title=None):
+    from plotly.subplots import make_subplots
+    import plotly.graph_objects as go
+
+    # set up a cols by x grid of subplots    
+    rows = int(np.ceil(len(stars_df)/cols))
     
+    fig = make_subplots(
+             rows=rows, cols=cols,
+             subplot_titles=list(stars_df.index)
+             )
+
+    for idx, (_, star) in enumerate(stars_df.iterrows()):
+        # xs, ys = star['xsensor'], star['ysensor']
+        # x = int(xs)
+        # y = int(ys)
+        row = idx // cols
+        col = idx - row * cols
+        fig.add_trace(
+            go.Heatmap(
+                z=star.cutout, 
+                colorscale='gray', 
+                showscale=False,
+                hovertemplate = 
+                    f'{star.MAIN_ID}<br>'+
+                    f'{star.source_file}<br>' +
+                    '%{x}, %{y}<br>' +
+                    'DN: %{z}' + 
+                    '<extra></extra>' # to remove trace number
+            ),
+            row=row+1, col=col+1 # starts from 1,1
+        )
+           
+    # make square pixels by setting scaleanchor for each y axis                       
+    fig.for_each_yaxis(
+        lambda yaxis: yaxis.update(dict(scaleanchor=yaxis.anchor))
+        )
+    
+    fig.update_layout(
+        title_text=title, 
+        showlegend=False,
+        #autosize=False,
+        #width=1200,
+        height=140 + 140*rows
+        )
+
+    fig.show()

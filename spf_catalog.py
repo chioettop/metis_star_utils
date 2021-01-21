@@ -44,7 +44,14 @@ def file_range(fits_range, base_dir):
             
     return found
 
-base_path = "../PFM_RSICW/"
+#base_path = "../PFM_RSICW/"
+base_path = "../20200515_01_PFM_IT-6B1_IOM-coarseAdj/"
+'''
+# DB cleanup for 20200515_01_PFM_IT-6B1_IOM-coarseAdj
+stars_df.drop(index=stars_df[stars_df.MAIN_ID=='* del03 Tau A'].index, inplace=True)
+
+'''
+
 files = glob.glob(base_path + "*image_*.fits")
 #fits_range = (645545693, 645755992) # alfa Leo
 #fits_range = (645742792, 645755992) # rho Leo
@@ -108,6 +115,8 @@ for n, file in enumerate(files):
     # write filename
     temp_stars_df['source_file'] = file_name
     temp_stars_df['uv'] = 'uv' in file_name
+    
+    # save a cutout centered at the peak
     temp_stars_df['cutout'] = [
         sl.image_cutout(image_data, x, y, size=11) \
             for x, y in temp_stars_df[['x_peak', 'y_peak']].values
@@ -159,7 +168,7 @@ fig.show()
 '''
 # plot ra, dec of single star
 stars_df = pd.read_pickle('../PFM_RSICW/spf_db.gz')
-img_info_df = pd.read_pickle('../PFM_RSICW/PFM_RSICW_info.gz')
+img_info_df = pd.read_pickle('../PFM_RSICW/fits_info_db.gz')
 star = '* c Leo'
 cleo=img_info_df.loc[stars_df[stars_df.MAIN_ID == star].source_file]
 plt.scatter(cleo.ra, cleo.dec, c=cleo.roll_angle)
